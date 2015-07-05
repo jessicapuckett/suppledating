@@ -1,5 +1,7 @@
 class CandidatesController < ApplicationController
   before_action :set_candidate, only: [:show, :edit, :update, :destroy]
+  before_action :correct_user, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate_user!
 
   # GET /candidates
   # GET /candidates.json
@@ -14,7 +16,7 @@ class CandidatesController < ApplicationController
 
   # GET /candidates/new
   def new
-    @candidate = Candidate.new
+    @candidate = current_user.candidates.build
   end
 
   # GET /candidates/1/edit
@@ -24,7 +26,7 @@ class CandidatesController < ApplicationController
   # POST /candidates
   # POST /candidates.json
   def create
-    @candidate = Candidate.new(candidate_params)
+    @candidate = current_user.candidates.build(candidate_params)
     if @candidate.save
       redirect_to @candidate, notice: 'Candidate was successfully created.'
     else
@@ -53,6 +55,11 @@ class CandidatesController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_candidate
       @candidate = Candidate.find(params[:id])
+    end
+
+    def correct_user
+      @candidate = current_user.candidates.find_by(id: params[:id])
+      redirect_to candidates_path, notice: "Not authorized to edit this candidate." if @candidate.nil?
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
